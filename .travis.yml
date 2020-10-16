@@ -1,0 +1,18 @@
+language: generic
+sudo: required
+services:
+    - docker
+before_install:
+    - docker build -t genzan/multi-test -f ./client/Dockerfile.dev ./client
+script:
+    - docker run -e CI=true genzan/multi-test npm run test
+after_success:
+    - docker build -t genzan/multi-client ./client
+    - docker build -t genzan/multi-nginx ./nginx
+    - docker build -t genzan/multi-server ./server
+    - docker build -t genzan/multi-worker ./worker
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+    - docker push genzan/multi-client
+    - docker push genzan/multi-nginx
+    - docker push genzan/multi-server
+    - docker push genzan/multi-worker
